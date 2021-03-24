@@ -85,10 +85,10 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
       knex(req.body.symbol).insert(formattedData).onConflict('date').ignore()
       .then(status => {
           // Get basic data with requested (date) parameters from database
-        knex.select('*').from(req.body.symbol).whereBetween('date', [req.body.startdate, req.body.enddate]).orderBy('date', 'ASC')
+        knex.select('date', 'open', 'close').from(req.body.symbol).whereBetween('date', [req.body.startdate, req.body.enddate]).orderBy('date', 'ASC')
         .then(requestedData => {
             // Get data for volume and price query
-          knex.raw("SELECT *, (high - low) AS priceChange FROM :symbol: WHERE volume = (SELECT MAX(volume) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) UNION ALL SELECT *, (high - low) AS priceChange FROM :symbol: WHERE (high - low) = (SELECT MAX(high - low) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) ORDER BY volume DESC, priceChange DESC", { symbol: req.body.symbol, startdate: req.body.startdate, enddate: req.body.enddate })
+          knex.select('date', 'volume', 'high', knex.raw("(high - low) AS priceChange FROM :symbol: WHERE volume = (SELECT MAX(volume) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) UNION ALL SELECT date, volume, high, (high - low) AS priceChange FROM :symbol: WHERE (high - low) = (SELECT MAX(high - low) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) ORDER BY volume DESC, priceChange DESC", { symbol: req.body.symbol, startdate: req.body.startdate, enddate: req.body.enddate }))
           .then(knexRawQuery => {
             let returnedArray = [];
               // Remove time from date
@@ -131,10 +131,9 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
               return longestBullish;
             };
 
-            function getVolumeAndPrice(req){
+            function getVolumeAndPrice(arr, req){
               let volumeAndPrice = [];
-              // Knex.raw returns additional, unnecessary information (for this app), so we need only first array that contains result of SQL-query.
-              knexRawQuery[0].map(row => {
+              arr.map(row => {
                 row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
                 row.priceChangePercent = Math.floor(row.priceChange / row.high * 10000) / 100 + "%";
                 volumeAndPrice.push(row);
@@ -142,10 +141,8 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
               return volumeAndPrice;
             };
 
-            function calcComparedToSMA(arr){
-                // Range were given on assignment
-              let range = 5;
-              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ return ('ERROR! Needs array with at least ' + range + ' objects'); };
+            function calcComparedToSMA(arr, range, res){
+              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ res.send('ERROR! Needs array with at least ' + range + ' objects'); };
               var array = [];
               var len = arr.length + 1;
               var idx = range - 1;
@@ -161,8 +158,10 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
               return array.sort((a,b) => (b.bestOpening > a.bestOpening) ? 1 : ((a.bestOpening > b.bestOpening) ? -1 : 0));;
             };
             
+              // Range were defined on assignment
+            let range = 5;
               // Run calculations and render result page to user
-            res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(req), comparedToSMA: calcComparedToSMA(returnedArray) });
+            res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(knexRawQuery, req), comparedToSMA: calcComparedToSMA(returnedArray, range, res) });
 
           }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
         }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
