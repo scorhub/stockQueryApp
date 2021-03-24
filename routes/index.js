@@ -30,7 +30,10 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
   } else {
     (async function () {
       const fileContent = await fs.promises.readFile(req.file.path);
+        // Parse csv data
       const records = parseSync(fileContent, {columns: true});
+        // Remove uploaded file temporary file
+      fs.unlinkSync(req.file.path);
         // Check validity of the data => if insufficient or invalid, send error to user
       if(records.length < 5){
         res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
@@ -104,8 +107,6 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
                 row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
                 returnedArray.push(row);
               });
-                // Remove uploaded file temporary file
-              fs.unlinkSync(req.file.path);
 
               // Create functions to calculate required results from data; longest bullish trend, highest trading volume & price change and opening price compared to SMA 5
 
@@ -203,6 +204,7 @@ router.get('/api/getfromapi', function(req, res, next) {
         fs.promises.writeFile('./public/temp/' + symbol + '.txt', answer.data);
         const fileContent = await fs.promises.readFile('./public/temp/' + symbol + '.txt');
         const records = parseSync(fileContent, {columns: true});
+        fs.unlinkSync('./public/temp/' + symbol + '.txt');
         if(records.length < 5){
           res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
         } else if(symbol === null || symbol === null || symbol.length < 1){
@@ -263,7 +265,6 @@ router.get('/api/getfromapi', function(req, res, next) {
                   row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
                   returnedArray.push(row);
                 });
-                fs.unlinkSync('./public/temp/' + symbol + '.txt');
 
                 function calcBullish(array) {
                   let bullishList = [];
