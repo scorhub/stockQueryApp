@@ -1,13 +1,35 @@
 <html>
 
 <head>
-  <title>Express</title>
+  <title>Stock Query App - MVP</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+  <h2>Get stock market information from .csv file or from Nasdaq API</h2>
+
+  <h3>Upload a file</h3>
+  <form action="/api/file" enctype="multipart/form-data" required method="POST">
+    <label for="symbol">Stock Symbol:</label>
+    <input type="input" id="symbol" name="symbol" required />
+    <br/><br/>
+    <label for="csvfile">Select a file:</label>
+    <input type="file" accept=".csv" id="csvfile" name="csvfile" required />
+    <br/><br/>
+    <input type="submit" />
+  </form>
+
+  <br/><br/>
+
+
+  <h3>Or use Nasdaq API</h3>
+
+
+
+  <script>
+    const fileInput = document.getElementById('csvfile');
+  </script>
+
 </body>
 
 </html>
