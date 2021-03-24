@@ -10,3 +10,7 @@ a {
 .rightpad { 
   padding-right: 1em;
 }
+
+.centered { 
+  text-align: center;
+}
