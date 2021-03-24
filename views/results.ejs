@@ -15,12 +15,26 @@
     <% var bullish = longestBullish.map(bull => {
     return  '<p>' + 'Between ' + bull.starting + ' and ' + bull.ending + '.' + '</p>'
     }).join('') -%>
-  <%- '<p>' + 'There were ' + longestBullish.length + ' equally long (' + longestBullish[0].length + ' days) bullish trends.' + '</p>' %>
+  <%- '<h3>' + 'There were ' + longestBullish.length + ' equally long (' + longestBullish[0].length + ' days) bullish trends.' + '</h3>' %>
   <%- '<p>' + 'They were:' + '</p>' %>
   <%- bullish %>
   <% } else { %>
-    <%- '<p>' + 'Longest bullish trend was ' + longestBullish[0].length + ' days in a row between ' + longestBullish[0].starting + ' and ' + longestBullish[0].ending + '.' + '</p>' %>
+    <%- '<h3>' + 'Longest bullish trend was ' + longestBullish[0].length + ' days in a row between ' + longestBullish[0].starting + ' and ' + longestBullish[0].ending + '.' + '</h3>' %>
   <% } %>
+
+  <br/>
+  <h3>Highest trading volume and the most significant stock price change within a day.</h3>
+  <table>
+    <tr>
+      <th class="rightpad">Date</th>
+      <th class="rightpad">Volume</th>
+      <th colspan="3">Price Change</th>
+    </tr>
+    <% var tablelines = volumeAndPrice.map(line => {
+      return  '<tr>' + '<td  class="rightpad">' + line.date + '</td>' + '<td  class="rightpad">' + line.volume + '</td>' + '<td>' + line.priceChange + '$' + '</td>' + '<td>' + '|' + '</td>' + '<td>' + line.priceChangePercent + '</td>' + '</tr>'
+    }).join('') -%>
+    <%- tablelines %>
+  </table>
 
   <script>
     const fileInput = document.getElementById('csvfile');
