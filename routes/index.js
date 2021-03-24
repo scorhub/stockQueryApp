@@ -25,13 +25,13 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
     const records = parseSync(fileContent, {columns: true});
       // Check validity of the data => if insufficient or invalid, send error to user
     if(records.length < 5){
-      res.send('ERROR! Needs data at least from 5 days.');
+      res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
     } else if(req.body.symbol === null || req.body.symbol === null || req.body.symbol.length < 1){
-      res.send('ERROR! Stock symbol missing.');
+      res.render('error', { errorMessage: 'ERROR! Stock symbol missing.' });
     } else if(req.body.startdate.length !== 10 || !(new Date(req.body.startdate) instanceof Date) || Date.parse(new Date(req.body.startdate)) >=  Date.parse(new Date(req.body.enddate))){
-      res.send('ERROR! Starting date invalid (or later than ending date).');
+      res.render('error', { errorMessage: 'ERROR! Starting date invalid (or later than ending date).' });
     } else if(req.body.enddate.length !== 10 || !(new Date(req.body.enddate) instanceof Date)){
-      res.send('ERROR! Ending date invalid.');
+      res.render('error', { errorMessage: 'ERROR! Ending date invalid.' });
     } else {
         // Convert stock symbol to lowercase
       req.body.symbol = req.body.symbol.toLowerCase();
@@ -142,30 +142,30 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
             };
 
             function calcComparedToSMA(arr, range, res){
-              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ res.send('ERROR! Needs array with at least ' + range + ' objects'); };
-              var array = [];
-              var len = arr.length + 1;
-              var idx = range - 1;
-              while (++idx < len) {
-                var round = range;
-                var sum = 0;
-                while (round--) sum += Number(arr.slice(idx - range, idx)[round].close);
-                var obj = arr[idx-1];
-                obj.sma = sum / range;
-                obj.bestOpening = Math.floor((Number(obj.open) - obj.sma) / ((Number(obj.open) + obj.sma) /2) * 100*100)/100;
-                array.push(obj);
+              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){  res.render('error', { errorMessage: 'ERROR! Needs array with at least ' + range + ' objects' });
+              } else {
+                var array = [];
+                var len = arr.length + 1;
+                var idx = range - 1;
+                while (++idx < len) {
+                  var round = range;
+                  var sum = 0;
+                  while (round--) sum += Number(arr.slice(idx - range, idx)[round].close);
+                  var obj = arr[idx-1];
+                  obj.sma = sum / range;
+                  obj.bestOpening = Math.floor((Number(obj.open) - obj.sma) / ((Number(obj.open) + obj.sma) /2) * 100*100)/100;
+                  array.push(obj);
+                };
+                return array.sort((a,b) => (b.bestOpening > a.bestOpening) ? 1 : ((a.bestOpening > b.bestOpening) ? -1 : 0));;
               };
-              return array.sort((a,b) => (b.bestOpening > a.bestOpening) ? 1 : ((a.bestOpening > b.bestOpening) ? -1 : 0));;
             };
-            
               // Range were defined on assignment
             let range = 5;
               // Run calculations and render result page to user
             res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(knexRawQuery, req), comparedToSMA: calcComparedToSMA(returnedArray, range, res) });
-
-          }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
-        }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
-      }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
+          }).catch(err => { res.render('error', { errorMessage: 'ERROR! ' + err }); });
+        }).catch(err => { res.render('error', { errorMessage: 'ERROR! ' + err }); });
+      }).catch(err => { res.render('error', { errorMessage: 'ERROR! ' + err }); });
     };
   })();
 });
