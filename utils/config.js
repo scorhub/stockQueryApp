@@ -8,4 +8,4 @@ let DATABASE_OPTIONS = {
     }
 };
 
-module.exports = { DATABASE_OPTIONS, PORT };
+module.exports = { DATABASE_OPTIONS };
