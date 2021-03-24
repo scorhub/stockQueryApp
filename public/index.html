@@ -29,6 +29,18 @@
 
 
   <h3>Or use Nasdaq API</h3>
+  <form action="/api/getfromapi" method="GET">
+    <label for="apisymbol">Stock Symbol:</label>
+    <input type="input" id="apisymbol" name="symbol" />
+    <br/>
+    <label for="startdate">Starting Date:</label>
+    <input type="date" id="apistartdate" name="startdate" onchange="getApiStartDate(event)" required />
+    <br/>
+    <label for="enddate">Ending Date:</label>
+    <input type="date" id="apienddate" name="enddate" onchange="getApiEndDate(event)" required />
+    <br/><br/>
+    <input type="submit" />
+  </form>
 
 
 
@@ -51,6 +63,7 @@
       oldDate = parseDate(oldDate);
       return oldDate;
     };
+        // Set controllers for dates (upload)
     // Set initial maximum date for ending date (as statistics are get only after close of stock market)
     document.getElementById("enddate").setAttribute("max", setNewDate(new Date(), -1));
     // Set initial maximum date for starting date (as minimum range for the apps SMA is 5 + max date of ending time)
@@ -62,6 +75,15 @@
     // Set maximum date for starting date by ending starting date
     function getEndDate(e){
       document.getElementById("startdate").setAttribute("max", setNewDate(parseDate(e.target.value),-4));
+    };
+        // Set controllers for dates (api)
+    document.getElementById("apienddate").setAttribute("max", setNewDate(new Date(), -1));
+    document.getElementById("apistartdate").setAttribute("max", setNewDate(new Date(), -5));
+    function getApiStartDate(e){
+      document.getElementById("apienddate").setAttribute("min", setNewDate(parseDate(e.target.value),4));
+    };
+    function getApiEndDate(e){
+      document.getElementById("apistartdate").setAttribute("max", setNewDate(parseDate(e.target.value),-4));
     };
   </script>
 
