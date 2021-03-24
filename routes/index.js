@@ -112,7 +112,7 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
                 } else {
                   if(obj.close > bullishList[bullishList.length-1][Array.length-1].close){
                     bullishList[bullishList.length-1].push(obj);
-                  } else  {
+                  } else {
                     bullishList.push(new Array(obj));
                   };
                 };
