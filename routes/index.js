@@ -72,50 +72,69 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
       // Update to database, ignore rows with same date as already in database
     knex(req.body.symbol).insert(formattedData).onConflict('date').ignore()
     .then(status => {
-        // Get data with requested (date) parameters from database
+        // Get basic data with requested (date) parameters from database
       knex.select('*').from(req.body.symbol).whereBetween('date', [req.body.startdate, req.body.enddate]).orderBy('date', 'ASC')
-      .then(rows => {
-        let returnedArray = [];
-          // Remove time from date
-        rows.map(row => {
-          row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
-          returnedArray.push(row);
-        });
-          // Remove uploaded file temporary file
-        fs.unlinkSync(req.file.path);
+      .then(requestedData => {
+          // Get data for volume and price query
+        knex.raw("SELECT *, (high - low) AS priceChange FROM :symbol: WHERE volume = (SELECT MAX(volume) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) UNION ALL SELECT *, (high - low) AS priceChange FROM :symbol: WHERE (high - low) = (SELECT MAX(high - low) FROM :symbol: WHERE date BETWEEN :startdate AND :enddate) ORDER BY volume DESC, priceChange DESC", { symbol: req.body.symbol, startdate: req.body.startdate, enddate: req.body.enddate })
+        .then(knexRawQuery => {
+          let returnedArray = [];
+            // Remove time from date
+          requestedData.map(row => {
+            row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
+            returnedArray.push(row);
+          });
+            // Remove uploaded file temporary file
+          fs.unlinkSync(req.file.path);
 
-          // Check longest bullish trend from given date range
-          // Create empty array, from which longest bullish can be calculated
-        let bullishList = [];
-          // Map bullish trends in own arrays inside array
-        returnedArray.map(obj => {
-          if(bullishList.length === 0) {
-            bullishList.push(new Array(obj));
-          } else {
-            if(obj.close > bullishList[bullishList.length-1][Array.length-1].close){
-              bullishList[bullishList.length-1].push(obj);
-            } else  {
-              bullishList.push(new Array(obj));
+          // Create functions to calculate required results from data; longest bullish trend, highest trading volume & price change and opening price compared to SMA 5
+
+          function calcBullish(array) {
+              // Create empty array, from which longest bullish can be calculated
+            let bullishList = [];
+              // Check longest bullish trend from given date range
+              // Map bullish trends in own arrays inside array
+              array.map(obj => {
+              if(bullishList.length === 0) {
+                bullishList.push(new Array(obj));
+              } else {
+                if(obj.close > bullishList[bullishList.length-1][Array.length-1].close){
+                  bullishList[bullishList.length-1].push(obj);
+                } else  {
+                  bullishList.push(new Array(obj));
+                };
+              };
+            });
+              // Check which array is longest, or if multiple arrays are equally longest, which arrays they are
+            function longest_arrays(arrayOfArrays) {
+              var max = arrayOfArrays[0].length;
+              arrayOfArrays.map(arr => max = Math.max(max, arr.length));
+              result = arrayOfArrays.filter(arr => arr.length == max);
+              return result;
             };
+            let longestBullish = [];
+            longest_arrays(bullishList).map(arr => {
+              longestBullish.push(new Object({length: arr.length, starting: arr[0].date, ending: arr[arr.length-1].date}));
+            });
+            return longestBullish;
           };
-        });
-        
-          // Check which array is longest, or if multiple arrays are equally longest, which arrays they are
-          // Create empty array for result data
-        longestBullish = [];
 
-        function longest_arrays(arrayOfArrays) {
-          var max = arrayOfArrays[0].length;
-          arrayOfArrays.map(arr => max = Math.max(max, arr.length));
-          result = arrayOfArrays.filter(arr => arr.length == max);
-          return result;
-        };
+          function getVolumeAndPrice(req){
+            let volumeAndPrice = [];
+            // Knex.raw returns additional, unnecessary information (for this app), so we need only first array that contains result of SQL-query.
+            knexRawQuery[0].map(row => {
+              row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
+              row.priceChangePercent = Math.floor(row.priceChange / row.high * 10000) / 100 + "%";
+              volumeAndPrice.push(row);
+            });
+            return volumeAndPrice;
+          };
 
-        longest_arrays(bullishList).map(arr => {
-          longestBullish.push(new Object({length: arr.length, starting: arr[0].date, ending: arr[arr.length-1].date}));
-        });
-          // Render result page to user
-        res.render('results', { longestBullish: longestBullish });
+          
+            // Run calculations and render result page to user
+          res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(req) });
+
+        }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
       }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
     }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
   })();
