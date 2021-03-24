@@ -33,7 +33,7 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
       res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
     } else if(symbol === null || symbol === null || symbol.length < 1){
       res.render('error', { errorMessage: 'ERROR! Stock symbol missing.' });
-    } else if(startdate.length !== 10 || !(new Date(startdate) instanceof Date) || Date.parse(new Date(startdate)) >=  Date.parse(new Date(enddate))){
+    } else if(startdate.length !== 10 || !(new Date(startdate) instanceof Date) || Date.parse(new Date(startdate)) >= Date.parse(new Date(enddate))){
       res.render('error', { errorMessage: 'ERROR! Starting date invalid (or later than ending date).' });
     } else if(enddate.length !== 10 || !(new Date(enddate) instanceof Date)){
       res.render('error', { errorMessage: 'ERROR! Ending date invalid.' });
@@ -147,7 +147,7 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
             };
 
             function calcComparedToSMA(arr, range, res){
-              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){  res.render('error', { errorMessage: 'ERROR! Needs array with at least ' + range + ' objects' });
+              if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ res.render('error', { errorMessage: 'ERROR! Needs array with at least ' + range + ' objects' });
               } else {
                 var array = [];
                 var len = arr.length + 1;
@@ -206,7 +206,7 @@ router.get('/api/getfromapi', function(req, res, next) {
             res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
           } else if(symbol === null || symbol === null || symbol.length < 1){
             res.render('error', { errorMessage: 'ERROR! Stock symbol missing.' });
-          } else if(startdate.length !== 10 || !(new Date(startdate) instanceof Date) || Date.parse(new Date(startdate)) >=  Date.parse(new Date(enddate))){
+          } else if(startdate.length !== 10 || !(new Date(startdate) instanceof Date) || Date.parse(new Date(startdate)) >= Date.parse(new Date(enddate))){
             res.render('error', { errorMessage: 'ERROR! Starting date invalid (or later than ending date).' });
           } else if(enddate.length !== 10 || !(new Date(enddate) instanceof Date)){
             res.render('error', { errorMessage: 'ERROR! Ending date invalid.' });
@@ -301,7 +301,7 @@ router.get('/api/getfromapi', function(req, res, next) {
                   };
 
                   function calcComparedToSMA(arr, range, res){
-                    if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){  res.render('error', { errorMessage: 'ERROR! Needs array with at least ' + range + ' objects' });
+                    if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ res.render('error', { errorMessage: 'ERROR! Needs array with at least ' + range + ' objects' });
                     } else {
                       var array = [];
                       var len = arr.length + 1;
