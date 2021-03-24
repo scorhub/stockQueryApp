@@ -130,9 +130,27 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
             return volumeAndPrice;
           };
 
+          function calcComparedToSMA(arr){
+              // Range were given on assignment
+            let range = 5;
+            if (!Array.isArray(arr) || typeof arr[0] !== 'object' || arr.length < range){ return ('ERROR! Needs array with at least ' + range + ' objects'); };
+            var array = [];
+            var len = arr.length + 1;
+            var idx = range - 1;
+            while (++idx < len) {
+              var round = range;
+              var sum = 0;
+              while (round--) sum += Number(arr.slice(idx - range, idx)[round].close);
+              var obj = arr[idx-1];
+              obj.sma = sum / range;
+              obj.bestOpening = Math.floor((Number(obj.open) - obj.sma) / ((Number(obj.open) + obj.sma) /2) * 100*100)/100;
+              array.push(obj);
+            };
+            return array.sort((a,b) => (b.bestOpening > a.bestOpening) ? 1 : ((a.bestOpening > b.bestOpening) ? -1 : 0));;
+          };
           
             // Run calculations and render result page to user
-          res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(req) });
+          res.render('results', { longestBullish: calcBullish(returnedArray), volumeAndPrice: getVolumeAndPrice(req), comparedToSMA: calcComparedToSMA(returnedArray) });
 
         }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
       }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
