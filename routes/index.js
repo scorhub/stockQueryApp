@@ -188,7 +188,7 @@ router.get('/api/getfromapi', function(req, res, next) {
     }
   };
     // Get data from Nasdaq API with user input parameters
-  axios.get('https://www.nasdaq.com/api/v1/historical/'+ req.query.symbol + '/stocks/' + req.query.startdate + '/' + req.query.enddate, config)
+  axios.get('https://www.nasdaq.com/api/v1/historical/'+ symbol + '/stocks/' + startdate + '/' + enddate, config)
   .then(answer => {
       // Check that received data is right type
     if(answer.headers['content-type'] !== 'application/csv'){
@@ -199,8 +199,8 @@ router.get('/api/getfromapi', function(req, res, next) {
         return res.render('error', { errorMessage: 'ERROR! No data found (possibly invalid stock symbol).' });
       } else {
         (async function () {
-          fs.promises.writeFile('./public/temp/' + req.query.symbol + '.txt', answer.data);
-          const fileContent = await fs.promises.readFile('./public/temp/' + req.query.symbol + '.txt');
+          fs.promises.writeFile('./public/temp/' + symbol + '.txt', answer.data);
+          const fileContent = await fs.promises.readFile('./public/temp/' + symbol + '.txt');
           const records = parseSync(fileContent, {columns: true});
           if(records.length < 5){
             res.render('error', { errorMessage: 'ERROR! Needs data at least from 5 days.' });
@@ -262,7 +262,7 @@ router.get('/api/getfromapi', function(req, res, next) {
                     row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
                     returnedArray.push(row);
                   });
-                  fs.unlinkSync('./public/temp/' + req.query.symbol + '.txt');
+                  fs.unlinkSync('./public/temp/' + symbol + '.txt');
 
                   function calcBullish(array) {
                     let bullishList = [];
