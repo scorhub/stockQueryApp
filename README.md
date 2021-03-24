@@ -3,7 +3,7 @@
 
 ## What is this project
 
-I got as an challenge to do MVP app, from which you can input stock market data and date range, and get market indicators as outcome.
+I got as an challenge to do MVP app, from which user can input stock market data and date range, and get market indicators as outcome.
 
 ## How to deploy
 
@@ -15,13 +15,13 @@ Create folder `temp` inside *`public`*. The folder is used for storage location 
 
 Run software in folder root with `node ./bin/www`.
 
-Open the app on browser - [localhost:3000](localhost:3000).
+Open the app on browser - [localhost:3000](http://localhost:3000).
 
 ## How to use
 
 App is simple to use: just fill stock symbol and upload .csv file of the stocks historical data, select starting and ending dates of inquiry. The app then returns results on new page.
 
-If you don't have, or want to use .csv file, inquiry can also be made with *Nasdaq API* option. The app then gets data directly from Nasdaq.
+If you don't have or want to use .csv file, inquiry can also be made with *Nasdaq API* option. The app then gets data directly from Nasdaq.
 
 ### Accepted data
 
@@ -31,7 +31,7 @@ The app accepts incoming data in following formats:
     01/01/2001,$102.34,999545613,$99.99,$104,$97.756
     *... and n more rows*
 
-    or
+or
 
     Date, Close/Last, Volume, Open, High, Low
     01/01/2001, $102.34, 999545613, $99.99, $104, $97.756
