@@ -188,7 +188,7 @@ router.get('/api/getfromapi', function(req, res, next) {
     }
   };
     // Get data from Nasdaq API with user input parameters
-  axios.get('https://www.nasdaq.com/api/v1/historical/'+ symbol + '/stocks/' + startdate + '/' + enddate, config)
+  axios.get('https://www.nasdaq.com/api/v1/historical/'+ symbol.toUpperCase() + '/stocks/' + startdate + '/' + enddate, config)
   .then(answer => {
       // Check that received data is right type
     if(answer.headers['content-type'] !== 'application/csv'){
