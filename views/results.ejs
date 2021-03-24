@@ -1,0 +1,31 @@
+<html>
+
+<head>
+  <title>Stock Query App - MVP</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <h3><a href="javascript:history.back()">Go Back</a></h3>
+
+  <h2>Results for stock query</h2>
+
+
+  <%if (longestBullish.length > 1) { %>
+    <% var bullish = longestBullish.map(bull => {
+    return  '<p>' + 'Between ' + bull.starting + ' and ' + bull.ending + '.' + '</p>'
+    }).join('') -%>
+  <%- '<p>' + 'There were ' + longestBullish.length + ' equally long (' + longestBullish[0].length + ' days) bullish trends.' + '</p>' %>
+  <%- '<p>' + 'They were:' + '</p>' %>
+  <%- bullish %>
+  <% } else { %>
+    <%- '<p>' + 'Longest bullish trend was ' + longestBullish[0].length + ' days in a row between ' + longestBullish[0].starting + ' and ' + longestBullish[0].ending + '.' + '</p>' %>
+  <% } %>
+
+  <script>
+    const fileInput = document.getElementById('csvfile');
+  </script>
+
+</body>
+
+</html>
