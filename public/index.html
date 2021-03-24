@@ -17,10 +17,10 @@
     <input type="file" accept=".csv" id="csvfile" name="csvfile" required />
     <br/><br/>
     <label for="startdate">Starting Date:</label>
-    <input type="date" id="startdate" name="startdate" />
+    <input type="date" id="startdate" name="startdate" onchange="getStartDate(event)" />
     <br/>
     <label for="enddate">Ending Date:</label>
-    <input type="date" id="enddate" name="enddate" />
+    <input type="date" id="enddate" name="enddate" onchange="getEndDate(event)" />
     <br/><br/>
     <input type="submit" />
   </form>
@@ -33,7 +33,36 @@
 
 
   <script>
-    const fileInput = document.getElementById('csvfile');
+    // Parse date to format, that is accepted by <input type="date"/>
+    function parseDate(date){
+      var date = new Date(date);
+      var day = date.getDate();
+      var month = date.getMonth()+1;
+      var year = date.getFullYear();
+      if( day < 10 ){ day = '0' + day };
+      if( month < 10 ){ month= '0' + month };
+      return date = year+'-'+month+'-'+day;
+    };
+    // Change date by input
+    function setNewDate(oldDate, add){
+      oldDate = new Date(oldDate);
+      var newDate = oldDate.getDate() + add;
+      oldDate.setDate(newDate);
+      oldDate = parseDate(oldDate);
+      return oldDate;
+    };
+    // Set initial maximum date for ending date (as statistics are get only after close of stock market)
+    document.getElementById("enddate").setAttribute("max", setNewDate(new Date(), -1));
+    // Set initial maximum date for starting date (as minimum range for the apps SMA is 5 + max date of ending time)
+    document.getElementById("startdate").setAttribute("max", setNewDate(new Date(), -5));
+    // Set minimum date for ending date by selected starting date
+    function getStartDate(e){
+      document.getElementById("enddate").setAttribute("min", setNewDate(parseDate(e.target.value),4));
+    };
+    // Set maximum date for starting date by ending starting date
+    function getEndDate(e){
+      document.getElementById("startdate").setAttribute("max", setNewDate(parseDate(e.target.value),-4));
+    };
   </script>
 
 </body>
