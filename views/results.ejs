@@ -36,6 +36,20 @@
     <%- tablelines %>
   </table>
 
+  <br/>
+  <h3>Best opening price compared to 5 days simple moving average.</h3>
+  <table>
+    <tr>
+      <th class="rightpad">Date</th>
+      <th>Price Change</th>
+    </tr>
+    <% var smatablelines = comparedToSMA.map(line => {
+      return  '<tr>' + '<td  class="rightpad">' + line.date + '</td>' + '<td>' + line.bestOpening + '%' + '</td>' + '</tr>'
+    }).join('') -%>
+    <%- smatablelines %>
+  </table>
+
+
   <script>
     const fileInput = document.getElementById('csvfile');
   </script>
