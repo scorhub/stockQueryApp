@@ -75,15 +75,47 @@ router.post('/api/file', upload.single('csvfile'), function(req, res, next) {
         // Get data with requested (date) parameters from database
       knex.select('*').from(req.body.symbol).whereBetween('date', [req.body.startdate, req.body.enddate]).orderBy('date', 'ASC')
       .then(rows => {
-        let result = [];
+        let returnedArray = [];
+          // Remove time from date
         rows.map(row => {
-            // Remove time from date
           row.date = new Date(Date.parse(row.date)).toLocaleString().split(' ')[0];
-          result.push(row);
+          returnedArray.push(row);
         });
           // Remove uploaded file temporary file
         fs.unlinkSync(req.file.path);
-        res.send(result);
+
+          // Check longest bullish trend from given date range
+          // Create empty array, from which longest bullish can be calculated
+        let bullishList = [];
+          // Map bullish trends in own arrays inside array
+        returnedArray.map(obj => {
+          if(bullishList.length === 0) {
+            bullishList.push(new Array(obj));
+          } else {
+            if(obj.close > bullishList[bullishList.length-1][Array.length-1].close){
+              bullishList[bullishList.length-1].push(obj);
+            } else  {
+              bullishList.push(new Array(obj));
+            };
+          };
+        });
+        
+          // Check which array is longest, or if multiple arrays are equally longest, which arrays they are
+          // Create empty array for result data
+        longestBullish = [];
+
+        function longest_arrays(arrayOfArrays) {
+          var max = arrayOfArrays[0].length;
+          arrayOfArrays.map(arr => max = Math.max(max, arr.length));
+          result = arrayOfArrays.filter(arr => arr.length == max);
+          return result;
+        };
+
+        longest_arrays(bullishList).map(arr => {
+          longestBullish.push(new Object({length: arr.length, starting: arr[0].date, ending: arr[arr.length-1].date}));
+        });
+          // Render result page to user
+        res.render('results', { longestBullish: longestBullish });
       }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
     }).catch(err => { res.status(500).json({error:'Database error.' + err}) });
   })();
